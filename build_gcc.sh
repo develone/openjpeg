@@ -1,0 +1,29 @@
+#!/bin/bash
+rm -f *.o
+gcc -c bio.c -o bio.o
+gcc -c cidx_manager.c -o cidx_manager.o
+gcc -c cio.c -o cio.c
+gcc -c dwt.c -o dwt.o
+gcc -c event.c -o event.o
+gcc -c function_list.c -o function_list.o
+gcc -c image.c -o image.o
+gcc -c invert.c -o invert.o
+gcc -c j2k.c -o j2k.o
+gcc -c jp2.c -o jp2.o
+gcc -c mct.c -o mct.o
+gcc -c mqc.c -o mqc.o
+gcc -c openjpegcc -o openjpeg.o
+gcc -c opj_clock.c -o opj_clock.o
+gcc -c opj_malloc.c -o opj_malloc.o
+gcc -c phix_manager.c -o phix_manager.o
+gcc -c pi.c -o pi.o
+gcc -c ppix_manager.c -o ppix_manager.o
+gcc -c raw.c -o raw.o
+gcc -c t1.c -o t1.o
+gcc -c t1_generate_luts.c -o t1_generate_luts.o
+gcc -c t2.c -o t2.o 
+gcc -c tcd.c -o tcd.o
+gcc -c tgt.c -o tgt.o
+gcc -c thix_manager.c -o thix_manager.o
+gcc -c thread.c -o thread.o
+gcc -c tpix_manager.c -o tpix_manager.o
