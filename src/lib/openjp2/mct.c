@@ -85,7 +85,7 @@ void opj_mct_encode(
 	assert( ((size_t)c0 & 0xf) == 0 );
 	assert( ((size_t)c1 & 0xf) == 0 );
 	assert( ((size_t)c2 & 0xf) == 0 );
-	
+	printf("mct.c converts rgb yuv\n");
 	for(i = 0; i < (len & ~3U); i += 4) {
 		__m128i y, u, v;
 		__m128i r = _mm_load_si128((const __m128i *)&(c0[i]));
@@ -101,7 +101,7 @@ void opj_mct_encode(
 		_mm_store_si128((__m128i *)&(c1[i]), u);
 		_mm_store_si128((__m128i *)&(c2[i]), v);
 	}
-	
+	printf("mct.c %d \n",len);
 	for(; i < len; ++i) {
 		OPJ_INT32 r = c0[i];
 		OPJ_INT32 g = c1[i];
@@ -113,6 +113,16 @@ void opj_mct_encode(
 		c1[i] = u;
 		c2[i] = v;
 	}
+	FILE *ptr_myfile, *ofp;
+	ofp = fopen("c0.bin","w");
+	fwrite(&c0[0], sizeof(int), 65536, ofp);
+	fclose(ofp);
+	ofp = fopen("c1.bin","w");
+	fwrite(&c1[0], sizeof(int), 65536, ofp);
+	fclose(ofp);
+	ofp = fopen("c2.bin","w");
+	fwrite(&c2[0], sizeof(int), 65536, ofp);
+	fclose(ofp);   
 }
 #else
 void opj_mct_encode(
