@@ -1,0 +1,13 @@
+git clone git@github.com:develone/openjpeg.git ultibo
+cd ultibo/
+git branch ultibo master
+git checkout ultibo
+
+git clone git@github.com:develone/openjpeg.git
+cd openjpeg
+git checkout ultibo
+mkdir build
+cd build/
+make
+cp ~/wkg/openjpeg_tmp/src/lib/openjp2/mct.c ../src/lib/openjp2
+cp ~/wkg/openjpeg_tmp/src/lib/openjp2/dwt.c ../src/lib/openjp2
