@@ -115,13 +115,13 @@ void opj_mct_encode(
 	}
 	FILE *ptr_myfile, *ofp;
 	ofp = fopen("c0.bin","w");
-	fwrite(&c0[0], sizeof(int), 65536, ofp);
+	fwrite(&c0[0], sizeof(int), len, ofp);
 	fclose(ofp);
 	ofp = fopen("c1.bin","w");
-	fwrite(&c1[0], sizeof(int), 65536, ofp);
+	fwrite(&c1[0], sizeof(int), len, ofp);
 	fclose(ofp);
 	ofp = fopen("c2.bin","w");
-	fwrite(&c2[0], sizeof(int), 65536, ofp);
+	fwrite(&c2[0], sizeof(int), len, ofp);
 	fclose(ofp);   
 }
 #else
@@ -147,13 +147,13 @@ void opj_mct_encode(
 	}
 	FILE *ptr_myfile, *ofp;
 	ofp = fopen("c0.bin","w");
-	fwrite(&c0[0], sizeof(int), 65536, ofp);
+	fwrite(&c0[0], sizeof(int), len, ofp);
 	fclose(ofp);
 	ofp = fopen("c1.bin","w");
-	fwrite(&c1[0], sizeof(int), 65536, ofp);
+	fwrite(&c1[0], sizeof(int), len, ofp);
 	fclose(ofp);
 	ofp = fopen("c2.bin","w");
-	fwrite(&c2[0], sizeof(int), 65536, ofp);
+	fwrite(&c2[0], sizeof(int), len, ofp);
 	fclose(ofp); 	
 }
 #endif
