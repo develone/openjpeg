@@ -1996,8 +1996,9 @@ static OPJ_BOOL opj_tcd_dwt_encode ( opj_tcd_t *p_tcd )
         opj_tcd_tilecomp_t * l_tile_comp = p_tcd->tcd_image->tiles->comps;
         opj_tccp_t * l_tccp = p_tcd->tcp->tccps;
         OPJ_UINT32 compno;
-
+	printf("0x%x 0x%x 0x%x\n",l_tile,l_tile_comp,l_tccp);
         for (compno = 0; compno < l_tile->numcomps; ++compno) {
+		printf("compno %d\n", compno);
                 if (l_tccp->qmfbid == 1) {
                         if (! opj_dwt_encode(l_tile_comp)) {
                                 return OPJ_FALSE;
@@ -2008,9 +2009,10 @@ static OPJ_BOOL opj_tcd_dwt_encode ( opj_tcd_t *p_tcd )
                                 return OPJ_FALSE;
                         }
                 }
-
+		printf("0x%x 0x%x \n",l_tile_comp,l_tccp);
                 ++l_tile_comp;
                 ++l_tccp;
+                printf("0x%x 0x%x \n",l_tile_comp,l_tccp);
         }
 
         return OPJ_TRUE;

@@ -473,6 +473,7 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void 
 /* </summary>                           */
 OPJ_BOOL opj_dwt_encode(opj_tcd_tilecomp_t * tilec)
 {
+	printf("opj_dwt_encode 0x%x \n",tilec);
 	return opj_dwt_encode_procedure(tilec,opj_dwt_encode_1);
 }
 

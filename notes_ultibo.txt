@@ -11,3 +11,13 @@ cd build/
 make
 cp ~/wkg/openjpeg_tmp/src/lib/openjp2/mct.c ../src/lib/openjp2
 cp ~/wkg/openjpeg_tmp/src/lib/openjp2/dwt.c ../src/lib/openjp2
+RPi
+git clone https://github.com/develone/openjpeg.git t_ultibo
+cd t_ultibo/
+git checkout ultibo
+mkdir build
+cd build
+cmake ..
+make
+cd bin/
+./opj_compress -mct 1 -i ../../lena_rgb_256.bmp -o tt.j2k
