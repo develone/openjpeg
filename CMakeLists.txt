@@ -102,7 +102,7 @@ endif()
 # --------------------------------------------------------------------------
 # Install directories
 # Build DOCUMENTATION (not in ALL target and only if Doxygen is found)
-option(BUILD_DOC "Build the HTML documentation (with doxygen if available)." OFF)
+option(BUILD_DOC "Build the HTML documentation (with doxygen if available)." ON)
 
 string(TOLOWER ${PROJECT_NAME} projectname)
 set(OPENJPEG_INSTALL_SUBDIR "${projectname}-${OPENJPEG_VERSION_MAJOR}.${OPENJPEG_VERSION_MINOR}")
@@ -172,7 +172,7 @@ configure_file(
 
 #-----------------------------------------------------------------------------
 # OpenJPEG build configuration options.
-option(BUILD_SHARED_LIBS "Build OpenJPEG shared library and link executables against it." ON)
+option(BUILD_SHARED_LIBS "Build OpenJPEG shared library and link executables against it." OFF)
 set (EXECUTABLE_OUTPUT_PATH ${OPENJPEG_BINARY_DIR}/bin CACHE PATH "Single output directory for building all executables.")
 set (LIBRARY_OUTPUT_PATH ${OPENJPEG_BINARY_DIR}/bin CACHE PATH "Single output directory for building all libraries.")
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
