@@ -1,5 +1,18 @@
 Step 1
-pi@raspberrypi3:~/t_ultibo/src/lib/openjp2 $ make all
+In toplevel folder
+pi@raspberrypi3:~/t_ultibo $ make 
+make -C src/lib/openjp2 all
+make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
+make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'
+make -C src/lib/openjp2 LIBRARY
+make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
+arm-none-eabi-ar rcs libopenjp2.a obj-libopenj2/*.o
+arm-none-eabi-ar: obj-libopenj2/*.o: No such file or directory
+Makefile:141: recipe for target 'LIBRARY' failed
+make[1]: *** [LIBRARY] Error 1
+make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'
+Makefile:94: recipe for target 'libopenjp2.a' failed
+make: *** [libopenjp2.a] Error 2
 
 all: $(OBJDIR)/ 
 
@@ -11,12 +24,17 @@ pi@raspberrypi3:~/t_ultibo/src/lib/openjp2 $ cp *.o obj-libopenj2/
 Need a rule to make the *.o  files 
 
 Step 3
+
 pi@raspberrypi3:~/t_ultibo $ make
+make -C src/lib/openjp2 all
+make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
+make[1]: Nothing to be done for 'all'.
+make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'
 make -C src/lib/openjp2 LIBRARY
 make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
 arm-none-eabi-ar rcs libopenjp2.a obj-libopenj2/*.o
 make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'
-
+ 
 Step 4
 pi@raspberrypi3:~/t_ultibo $ make clean
 make -C src/lib/openjp2 clean

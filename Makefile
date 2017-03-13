@@ -83,11 +83,13 @@
 ################################################################################
 ##
 ##
-all:	libopenjp2.a
+all:	rule1 libopenjp2.a 
 
 #doc:
 #	$(MAKE) -C doc
-
+rule1 : 
+	$(MAKE) -C src/lib/openjp2 all
+	
 libopenjp2.a:
 	$(MAKE) -C src/lib/openjp2 LIBRARY
 
