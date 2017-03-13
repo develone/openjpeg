@@ -1,0 +1,25 @@
+Step 1
+pi@raspberrypi3:~/t_ultibo/src/lib/openjp2 $ make all
+
+all: $(OBJDIR)/ 
+
+$(OBJDIR)/:
+	@bash -c "if [ ! -e $(OBJDIR) ]; then mkdir -p $(OBJDIR); fi"
+
+Step 2	
+pi@raspberrypi3:~/t_ultibo/src/lib/openjp2 $ cp *.o obj-libopenj2/
+Need a rule to make the *.o  files 
+
+Step 3
+pi@raspberrypi3:~/t_ultibo $ make
+make -C src/lib/openjp2 LIBRARY
+make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
+arm-none-eabi-ar rcs libopenjp2.a obj-libopenj2/*.o
+make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'
+
+Step 4
+pi@raspberrypi3:~/t_ultibo $ make clean
+make -C src/lib/openjp2 clean
+make[1]: Entering directory '/home/pi/t_ultibo/src/lib/openjp2'
+rm -rf obj-libopenj2/ libopenjp2.a
+make[1]: Leaving directory '/home/pi/t_ultibo/src/lib/openjp2'

@@ -91,3 +91,6 @@ all:	libopenjp2.a
 libopenjp2.a:
 	$(MAKE) -C src/lib/openjp2 LIBRARY
 
+.PHONY: clean
+clean:
+	$(MAKE) -C src/lib/openjp2 clean
