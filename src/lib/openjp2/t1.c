@@ -406,7 +406,7 @@ static void opj_t1_enc_sigpass_step(   opj_t1_t *t1,
 {
 	OPJ_INT32 v;
     OPJ_UINT32 flag;
-	
+	//printf("In t1 t1_enc_sigpass_step\n");
 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
 	
 	flag = vsc ? (OPJ_UINT32)((*flagsp) & (~(T1_SIG_S | T1_SIG_SE | T1_SIG_SW | T1_SGN_S))) : (OPJ_UINT32)(*flagsp);
@@ -534,7 +534,7 @@ static void opj_t1_enc_sigpass(opj_t1_t *t1,
 {
 	OPJ_UINT32 i, j, k, vsc; 
     OPJ_INT32 one;
-
+	printf("In t1 t1_enc_sigpass\n");
 	*nmsedec = 0;
 	one = 1 << (bpno + T1_NMSEDEC_FRACBITS);
 	for (k = 0; k < t1->h; k += 4) {
@@ -706,6 +706,7 @@ static void opj_t1_enc_refpass_step(   opj_t1_t *t1,
                                 OPJ_BYTE type,
                                 OPJ_UINT32 vsc)
 {
+	//printf("opj_t1_enc_refpass_step\n");
 	OPJ_INT32 v;
 	OPJ_UINT32 flag;
 	
@@ -816,6 +817,7 @@ static void opj_t1_enc_refpass(
 		OPJ_BYTE type,
 		OPJ_UINT32 cblksty)
 {
+	printf("opj_t1_enc_refpass\n");
 	OPJ_UINT32 i, j, k, vsc;
     OPJ_INT32 one;
 
@@ -2040,6 +2042,7 @@ static void opj_t1_encode_cblk(opj_t1_t *t1,
                         const OPJ_FLOAT64 * mct_norms,
                         OPJ_UINT32 mct_numcomps)
 {
+	printf("In opj_t1_encode_cblk\n");
 	OPJ_FLOAT64 cumwmsedec = 0.0;
 
 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
