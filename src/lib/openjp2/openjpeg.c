@@ -171,7 +171,7 @@ opj_codec_t* OPJ_CALLCONV opj_create_decompress(OPJ_CODEC_FORMAT p_format)
 	}
 
 	l_codec->is_decompressor = 1;
-
+	
 	switch (p_format) {
 		case OPJ_CODEC_J2K:
 			l_codec->opj_dump_codec = (void (*) (void*, OPJ_INT32, FILE*)) j2k_dump;
@@ -563,9 +563,10 @@ opj_codec_t* OPJ_CALLCONV opj_create_compress(OPJ_CODEC_FORMAT p_format)
 	}
 	
 	l_codec->is_decompressor = 0;
-
+	printf("In openjpeg.c OPJ_CALLCONV opj_create_compress\n");
 	switch(p_format) {
 		case OPJ_CODEC_J2K:
+			printf("In openjpeg OPJ_CODEC_J2K\n");
 			l_codec->m_codec_data.m_compression.opj_encode = (OPJ_BOOL (*) (void *,
 																			struct opj_stream_private *,
 																			struct opj_event_mgr * )) opj_j2k_encode;
@@ -833,6 +834,8 @@ OPJ_BOOL OPJ_CALLCONV opj_write_tile (	opj_codec_t *p_codec,
 										OPJ_UINT32 p_data_size,
 										opj_stream_t *p_stream )
 {
+	printf("In openjpeg opj_write_tile\n");
+	printf(" *p_codec 0x%x p_tile_index %d p_data 0x%x  \n",p_codec,p_tile_index,p_data);
 	if (p_codec && p_stream && p_data) {
 		opj_codec_private_t * l_codec = (opj_codec_private_t *) p_codec;
 		opj_stream_private_t * l_stream = (opj_stream_private_t *) p_stream;
