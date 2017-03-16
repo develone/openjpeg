@@ -43,6 +43,30 @@
 
 #include "opj_includes.h"
 
+int octave_write_32(const char * fn,int * d_ptr, int sz) {
+	 
+	FILE *subfileptr;
+	subfileptr = fopen(fn,"w");
+	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
+	if (NULL == subfileptr) {
+		/*
+		fprintf(stderr, "Could not open red for writing\n");
+		perror("RED-WR:");
+		exit(EXIT_FAILURE);
+		*/
+		return(0);
+	}
+ 
+	if (sz != (int)fwrite(d_ptr,  sizeof(int), sz, subfileptr)) {
+		fprintf(stderr, "Write of red failed\n"); perror("RED:");
+		exit(EXIT_FAILURE);
+	}
+	
+ 	
+	fclose(subfileptr);
+	
+	return(1);
+}
 /** @defgroup DWT DWT - Implementation of a discrete wavelet transform */
 /*@{*/
 
@@ -387,15 +411,20 @@ static void opj_dwt_encode_stepsize(OPJ_INT32 stepsize, OPJ_INT32 numbps, opj_st
 /* </summary>                           */
 static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void (*p_function)(OPJ_INT32 *, OPJ_INT32,OPJ_INT32,OPJ_INT32) )
 {
+	//const char *octave_output_file_1;
+	const char *octave_output_file_1a;
 	OPJ_INT32 i, j, k;
 	OPJ_INT32 *a = 00;
 	OPJ_INT32 *aj = 00;
 	OPJ_INT32 *bj = 00;
 	OPJ_INT32 w, l;
-
+	printf("In file dwt.c opj_dwt_encode_procedure \n");
+	printf("return opj_dwt_encode opj_dwt_encode_procedure \n");
+	printf("opj_dwt_encode_procedure \n");
 	OPJ_INT32 rw;			/* width of the resolution level computed   */
 	OPJ_INT32 rh;			/* height of the resolution level computed  */
 	size_t l_data_size;
+	int sz = tilec->x1*tilec->x1;
 
 	opj_tcd_resolution_t * l_cur_res = 0;
 	opj_tcd_resolution_t * l_last_res = 0;
@@ -403,11 +432,17 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void 
 	w = tilec->x1-tilec->x0;
 	l = (OPJ_INT32)tilec->numresolutions-1;
 	a = tilec->data;
-
-	l_cur_res = tilec->resolutions + l;
+	//octave_output_file_1 = "dwt-in.32t";
+	//printf("opj_dwt_encode_procedure end %s %d \n",octave_output_file_1, sz);
+	//octave_write_32(octave_output_file_1,a,sz);	
+	printf("opj_dwt_encode_procedure x0 %d y0 %d  \n",tilec->x0, tilec->y0);
+	printf("opj_dwt_encode_procedure x1 %d y1 %d  \n",tilec->x1, tilec->y1);
+	printf("opj_dwt_encode_procedure resolutions_size %d \n",tilec->resolutions_size);
+ 	l_cur_res = tilec->resolutions + l;
 	l_last_res = l_cur_res - 1;
 
 	l_data_size = opj_dwt_max_resolution( tilec->resolutions,tilec->numresolutions);
+	printf("opj_dwt_encode_procedure data ptr 0x%x data sz %d resolutins %d  \n",a, l_data_size,l);
 	/* overflow check */
 	if (l_data_size > (SIZE_MAX / sizeof(OPJ_INT32))) {
 		/* FIXME event manager error callback */
@@ -439,6 +474,7 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void 
 
 		sn = rh1;
 		dn = rh - rh1;
+		printf("opj_dwt_encode_procedure sn %d dn %d  \n",sn,dn);
 		for (j = 0; j < rw; ++j) {
 			aj = a + j;
 			for (k = 0; k < rh; ++k) {
@@ -464,7 +500,10 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void 
 
 		--l_last_res;
 	}
-
+	
+	octave_output_file_1a = "dwt-out.32t";
+	printf("opj_dwt_encode_procedure end %s %d \n",octave_output_file_1a, sz);
+	octave_write_32(octave_output_file_1a,a,sz);
 	opj_free(bj);
 	return OPJ_TRUE;
 }
@@ -473,7 +512,9 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void 
 /* </summary>                           */
 OPJ_BOOL opj_dwt_encode(opj_tcd_tilecomp_t * tilec)
 {
-	printf("opj_dwt_encode 0x%x \n",tilec);
+	printf("In file dwt.c opj_dwt_encode \n");
+	printf("passed in opj_tcd_tilecomp_t * tilec\n");
+	printf("opj_dwt_encode tilec struct 0x%x \n",tilec);
 	return opj_dwt_encode_procedure(tilec,opj_dwt_encode_1);
 }
 
