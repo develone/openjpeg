@@ -1,0 +1,629 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index a7dbe08..6659be1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -172,7 +172,7 @@ configure_file(
+ 
+ #-----------------------------------------------------------------------------
+ # OpenJPEG build configuration options.
+-option(BUILD_SHARED_LIBS "Build OpenJPEG shared library and link executables against it." ON)
++option(BUILD_SHARED_LIBS "Build OpenJPEG shared library and link executables against it." OFF)
+ set (EXECUTABLE_OUTPUT_PATH ${OPENJPEG_BINARY_DIR}/bin CACHE PATH "Single output directory for building all executables.")
+ set (LIBRARY_OUTPUT_PATH ${OPENJPEG_BINARY_DIR}/bin CACHE PATH "Single output directory for building all libraries.")
+ mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
+@@ -191,7 +191,7 @@ endif()
+ # Compiler specific flags:
+ if(CMAKE_COMPILER_IS_GNUCC)
+   # For all builds, make sure openjpeg is std99 compliant:
+-  # set(CMAKE_C_FLAGS "-Wall -std=c99 ${CMAKE_C_FLAGS}") # FIXME: this setting prevented us from setting a coverage build.
++  set(CMAKE_C_FLAGS "-g -Wall -std=c99 ${CMAKE_C_FLAGS}") # FIXME: this setting prevented us from setting a coverage build.
+   # Do not use ffast-math for all build, it would produce incorrect results, only set for release:
+   set(OPENJPEG_LIBRARY_COMPILE_OPTIONS ${OPENJPEG_LIBRARY_COMPILE_OPTIONS} "$<$<CONFIG:Release>:-ffast-math>")
+ endif()
+@@ -262,7 +262,7 @@ option(BUILD_JPIP "Build the JPIP library and executables." OFF)
+ if(BUILD_JPIP)
+   option(BUILD_JPIP_SERVER "Build the JPIP server." OFF)
+ endif()
+-option(BUILD_VIEWER "Build the OPJViewer executable (C++)" OFF)
++option(BUILD_VIEWER "Build the OPJViewer executable (C++)" OB)
+ option(BUILD_JAVA "Build the openjpeg jar (Java)" OFF)
+ option(BUILD_JP3D "Build the JP3D comp" OFF)
+ mark_as_advanced(BUILD_VIEWER)
+@@ -300,7 +300,7 @@ endif()
+ 
+ #-----------------------------------------------------------------------------
+ # Buld Testing
+-option(BUILD_TESTING "Build the tests." OFF)
++option(BUILD_TESTING "Build the tests." ON)
+ if(BUILD_TESTING)
+   if(BUILD_CODEC)
+     enable_testing()
+diff --git a/src/lib/openjp2/dwt.c b/src/lib/openjp2/dwt.c
+index 9e2a361..f2af4b3 100644
+--- a/src/lib/openjp2/dwt.c
++++ b/src/lib/openjp2/dwt.c
+@@ -43,6 +43,30 @@
+ 
+ #include "opj_includes.h"
+ 
++int octave_write_32(const char * fn,int * d_ptr, int sz) {
++	 
++	FILE *subfileptr;
++	subfileptr = fopen(fn,"w");
++	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
++	if (NULL == subfileptr) {
++		/*
++		fprintf(stderr, "Could not open red for writing\n");
++		perror("RED-WR:");
++		exit(EXIT_FAILURE);
++		*/
++		return(0);
++	}
++ 
++	if (sz != (int)fwrite(d_ptr,  sizeof(int), sz, subfileptr)) {
++		fprintf(stderr, "Write of red failed\n"); perror("RED:");
++		exit(EXIT_FAILURE);
++	}
++	
++ 	
++	fclose(subfileptr);
++	
++	return(1);
++}
+ /** @defgroup DWT DWT - Implementation of a discrete wavelet transform */
+ /*@{*/
+ 
+@@ -387,15 +411,20 @@ static void opj_dwt_encode_stepsize(OPJ_INT32 stepsize, OPJ_INT32 numbps, opj_st
+ /* </summary>                           */
+ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void (*p_function)(OPJ_INT32 *, OPJ_INT32,OPJ_INT32,OPJ_INT32) )
+ {
++	//const char *octave_output_file_1;
++	const char *octave_output_file_1a;
+ 	OPJ_INT32 i, j, k;
+ 	OPJ_INT32 *a = 00;
+ 	OPJ_INT32 *aj = 00;
+ 	OPJ_INT32 *bj = 00;
+ 	OPJ_INT32 w, l;
+-
++	printf("In file dwt.c opj_dwt_encode_procedure \n");
++	printf("return opj_dwt_encode opj_dwt_encode_procedure \n");
++	printf("opj_dwt_encode_procedure \n");
+ 	OPJ_INT32 rw;			/* width of the resolution level computed   */
+ 	OPJ_INT32 rh;			/* height of the resolution level computed  */
+ 	size_t l_data_size;
++	int sz = tilec->x1*tilec->x1;
+ 
+ 	opj_tcd_resolution_t * l_cur_res = 0;
+ 	opj_tcd_resolution_t * l_last_res = 0;
+@@ -403,11 +432,17 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void
+ 	w = tilec->x1-tilec->x0;
+ 	l = (OPJ_INT32)tilec->numresolutions-1;
+ 	a = tilec->data;
+-
+-	l_cur_res = tilec->resolutions + l;
++	//octave_output_file_1 = "dwt-in.32t";
++	//printf("opj_dwt_encode_procedure end %s %d \n",octave_output_file_1, sz);
++	//octave_write_32(octave_output_file_1,a,sz);	
++	printf("opj_dwt_encode_procedure x0 %d y0 %d  \n",tilec->x0, tilec->y0);
++	printf("opj_dwt_encode_procedure x1 %d y1 %d  \n",tilec->x1, tilec->y1);
++	printf("opj_dwt_encode_procedure resolutions_size %d \n",tilec->resolutions_size);
++ 	l_cur_res = tilec->resolutions + l;
+ 	l_last_res = l_cur_res - 1;
+ 
+ 	l_data_size = opj_dwt_max_resolution( tilec->resolutions,tilec->numresolutions);
++	printf("opj_dwt_encode_procedure data ptr 0x%x data sz %d resolutins %d  \n",a, l_data_size,l);
+ 	/* overflow check */
+ 	if (l_data_size > (SIZE_MAX / sizeof(OPJ_INT32))) {
+ 		/* FIXME event manager error callback */
+@@ -439,6 +474,7 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void
+ 
+ 		sn = rh1;
+ 		dn = rh - rh1;
++		printf("opj_dwt_encode_procedure sn %d dn %d  \n",sn,dn);
+ 		for (j = 0; j < rw; ++j) {
+ 			aj = a + j;
+ 			for (k = 0; k < rh; ++k) {
+@@ -464,7 +500,10 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void
+ 
+ 		--l_last_res;
+ 	}
+-
++	
++	octave_output_file_1a = "dwt-out.32t";
++	printf("opj_dwt_encode_procedure end %s %d \n",octave_output_file_1a, sz);
++	octave_write_32(octave_output_file_1a,a,sz);
+ 	opj_free(bj);
+ 	return OPJ_TRUE;
+ }
+@@ -473,6 +512,9 @@ static INLINE OPJ_BOOL opj_dwt_encode_procedure(opj_tcd_tilecomp_t * tilec,void
+ /* </summary>                           */
+ OPJ_BOOL opj_dwt_encode(opj_tcd_tilecomp_t * tilec)
+ {
++	printf("In file dwt.c opj_dwt_encode \n");
++	printf("passed in opj_tcd_tilecomp_t * tilec\n");
++	printf("opj_dwt_encode tilec struct 0x%x \n",tilec);
+ 	return opj_dwt_encode_procedure(tilec,opj_dwt_encode_1);
+ }
+ 
+diff --git a/src/lib/openjp2/openjpeg.c b/src/lib/openjp2/openjpeg.c
+index 4d12540..265908c 100644
+--- a/src/lib/openjp2/openjpeg.c
++++ b/src/lib/openjp2/openjpeg.c
+@@ -171,7 +171,7 @@ opj_codec_t* OPJ_CALLCONV opj_create_decompress(OPJ_CODEC_FORMAT p_format)
+ 	}
+ 
+ 	l_codec->is_decompressor = 1;
+-
++	
+ 	switch (p_format) {
+ 		case OPJ_CODEC_J2K:
+ 			l_codec->opj_dump_codec = (void (*) (void*, OPJ_INT32, FILE*)) j2k_dump;
+@@ -563,9 +563,10 @@ opj_codec_t* OPJ_CALLCONV opj_create_compress(OPJ_CODEC_FORMAT p_format)
+ 	}
+ 	
+ 	l_codec->is_decompressor = 0;
+-
++	printf("In openjpeg.c OPJ_CALLCONV opj_create_compress\n");
+ 	switch(p_format) {
+ 		case OPJ_CODEC_J2K:
++			printf("In openjpeg OPJ_CODEC_J2K\n");
+ 			l_codec->m_codec_data.m_compression.opj_encode = (OPJ_BOOL (*) (void *,
+ 																			struct opj_stream_private *,
+ 																			struct opj_event_mgr * )) opj_j2k_encode;
+@@ -833,6 +834,8 @@ OPJ_BOOL OPJ_CALLCONV opj_write_tile (	opj_codec_t *p_codec,
+ 										OPJ_UINT32 p_data_size,
+ 										opj_stream_t *p_stream )
+ {
++	printf("In openjpeg opj_write_tile\n");
++	printf(" *p_codec 0x%x p_tile_index %d p_data 0x%x  \n",p_codec,p_tile_index,p_data);
+ 	if (p_codec && p_stream && p_data) {
+ 		opj_codec_private_t * l_codec = (opj_codec_private_t *) p_codec;
+ 		opj_stream_private_t * l_stream = (opj_stream_private_t *) p_stream;
+diff --git a/src/lib/openjp2/t1.c b/src/lib/openjp2/t1.c
+index 453d290..540fdc6 100644
+--- a/src/lib/openjp2/t1.c
++++ b/src/lib/openjp2/t1.c
+@@ -406,7 +406,7 @@ static void opj_t1_enc_sigpass_step(   opj_t1_t *t1,
+ {
+ 	OPJ_INT32 v;
+     OPJ_UINT32 flag;
+-	
++	//printf("In t1 t1_enc_sigpass_step\n");
+ 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
+ 	
+ 	flag = vsc ? (OPJ_UINT32)((*flagsp) & (~(T1_SIG_S | T1_SIG_SE | T1_SIG_SW | T1_SGN_S))) : (OPJ_UINT32)(*flagsp);
+@@ -534,7 +534,7 @@ static void opj_t1_enc_sigpass(opj_t1_t *t1,
+ {
+ 	OPJ_UINT32 i, j, k, vsc; 
+     OPJ_INT32 one;
+-
++	printf("In t1 t1_enc_sigpass\n");
+ 	*nmsedec = 0;
+ 	one = 1 << (bpno + T1_NMSEDEC_FRACBITS);
+ 	for (k = 0; k < t1->h; k += 4) {
+@@ -706,6 +706,7 @@ static void opj_t1_enc_refpass_step(   opj_t1_t *t1,
+                                 OPJ_BYTE type,
+                                 OPJ_UINT32 vsc)
+ {
++	//printf("opj_t1_enc_refpass_step\n");
+ 	OPJ_INT32 v;
+ 	OPJ_UINT32 flag;
+ 	
+@@ -816,6 +817,7 @@ static void opj_t1_enc_refpass(
+ 		OPJ_BYTE type,
+ 		OPJ_UINT32 cblksty)
+ {
++	printf("opj_t1_enc_refpass\n");
+ 	OPJ_UINT32 i, j, k, vsc;
+     OPJ_INT32 one;
+ 
+@@ -2040,6 +2042,7 @@ static void opj_t1_encode_cblk(opj_t1_t *t1,
+                         const OPJ_FLOAT64 * mct_norms,
+                         OPJ_UINT32 mct_numcomps)
+ {
++	printf("In opj_t1_encode_cblk\n");
+ 	OPJ_FLOAT64 cumwmsedec = 0.0;
+ 
+ 	opj_mqc_t *mqc = t1->mqc;	/* MQC component */
+diff --git a/src/lib/openjp2/tcd.c b/src/lib/openjp2/tcd.c
+index 36f4084..c7ceb9d 100644
+--- a/src/lib/openjp2/tcd.c
++++ b/src/lib/openjp2/tcd.c
+@@ -620,6 +620,7 @@ void opj_tcd_destroy(opj_tcd_t *tcd) {
+ 
+ OPJ_BOOL opj_alloc_tile_component_data(opj_tcd_tilecomp_t *l_tilec)
+ {
++	printf("*************************************\n");
+ 	if ((l_tilec->data == 00) || ((l_tilec->data_size_needed > l_tilec->data_size) && (l_tilec->ownsData == OPJ_FALSE))) {
+ 		l_tilec->data = (OPJ_INT32 *) opj_aligned_malloc(l_tilec->data_size_needed);
+ 		if (! l_tilec->data ) {
+diff --git a/tests/test_tile_encoder.c b/tests/test_tile_encoder.c
+index bd3fe35..99604b8 100644
+--- a/tests/test_tile_encoder.c
++++ b/tests/test_tile_encoder.c
+@@ -32,6 +32,57 @@
+ #include "opj_config.h"
+ #include "openjpeg.h"
+ #include "stdlib.h"
++#include <sys/time.h>
++
++#include "dwtlift.h"
++int octave_write(const char * fn,int * d_ptr, int sz) {
++	 
++	FILE *subfileptr;
++	subfileptr = fopen(fn,"w");
++	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
++	if (NULL == subfileptr) {
++		/*
++		fprintf(stderr, "Could not open red for writing\n");
++		perror("RED-WR:");
++		exit(EXIT_FAILURE);
++		*/
++		return(0);
++	}
++ 
++	if (sz != (int)fwrite(d_ptr,  sizeof(int), sz, subfileptr)) {
++		fprintf(stderr, "Write of red failed\n"); perror("RED:");
++		exit(EXIT_FAILURE);
++	}
++	
++ 	
++	fclose(subfileptr);
++	
++	return(1);
++}
++int octave_write_byte(const char * fn,char * d_ptr, int sz) {
++	 
++	FILE *subfileptr;
++	subfileptr = fopen(fn,"w");
++	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
++	if (NULL == subfileptr) {
++		/*
++		fprintf(stderr, "Could not open red for writing\n");
++		perror("RED-WR:");
++		exit(EXIT_FAILURE);
++		*/
++		return(0);
++	}
++ 
++	if (sz != (int)fwrite(d_ptr,  sizeof(char), sz, subfileptr)) {
++		fprintf(stderr, "Write of red failed\n"); perror("RED:");
++		exit(EXIT_FAILURE);
++	}
++	
++ 	
++	fclose(subfileptr);
++	
++	return(1);
++}
+ 
+ /* -------------------------------------------------------------------------- */
+ 
+@@ -58,10 +109,152 @@ static void info_callback(const char *msg, void *client_data) {
+ }
+ 
+ /* -------------------------------------------------------------------------- */
+-
++ 
+ #define NUM_COMPS_MAX 4
+ int main (int argc, char *argv[])
+ {
++	int TopDown;
++	
++	/* need wha bit indicate TopDown*/
++	TopDown = 1;
++ 	char *imgptr,*dataptr,*r,*g,*b;
++	struct rec {
++		unsigned char header[14];	
++	};
++	struct rec1 {
++		unsigned char imginfo[40];	
++	};
++	const char *octave_output_file_1;
++	const char *octave_output_file_2;
++	const char *octave_output_file_3;
++	FILE *in,*fp;
++	char *fn;
++
++	char inchar;
++	int bpp,j;
++	long int offset,width,height;
++	int pixels, size, sz;
++
++	int plot=1;
++	encode = 1;
++	decomp = 3;
++	flgyuv = 1;
++	printf("enc %d decomp %d yuv %d\n",encode,decomp,flgyuv);
++	struct rec record;
++	struct rec1 record1;
++
++
++	fn = argv[1];
++	in = fopen(fn,"rb");
++	
++	
++	if (!in) {
++ 		printf("Unle to open file!");
++		return 1;
++	}
++	
++	/* read header */
++	 
++	fread(&record,sizeof(struct rec),1,in);
++	loop = 0;	
++	while(loop<14) {
++		printf("%i ",record.header[loop]);
++		loop++;
++	}
++	 
++	
++	printf("\n");
++	//xx1 = (long)record.header[4];
++	printf("file size = %li\n",(long)record.header[4]*65536+(long)record.header[3]*256+(long)record.header[2]);
++	offset = (long)record.header[11]*256+(long)record.header[10];
++	printf("offset to image = %i\n",offset);
++	
++	/* Image Information Header */
++	fread(&record1,sizeof(struct rec1),1,in);
++	loop = 0;
++	while(loop<40) {
++		printf("%i ",record1.imginfo[loop]);
++		loop++;
++	}
++		
++	width = (long)record1.imginfo[5]*256+(long)record1.imginfo[4];
++	height = (long)record1.imginfo[9]*256+(long)record1.imginfo[8];
++	printf("\n");
++	printf("width = %i height = %i\n",width,height);
++	bpp = record1.imginfo[14];
++	printf("\n");
++	printf("bits per pixel = %i\n",bpp);
++	pixels = width * height;
++	size = pixels*3;
++	printf("pixels = %d size = %d \n",pixels,size);
++	char data[size];
++	
++	
++	char *lclip;
++	
++	
++	for(loop=0; loop<(offset-54); loop++) {
++		fread(&inchar,sizeof(inchar),1,in);
++		 
++		//printf("%c ",inchar);
++	}
++	
++	fread(&data[0],sizeof(data),1,in);
++ 	gettimeofday(&start, NULL);
++	IMAGEP		imgbm;
++	ww = width;
++	hh = height;
++	sz = ww*hh;
++	dataptr = malloc(3*ww*hh*sizeof(char));
++	printf("size of dataptr %d\n",3*ww*hh*sizeof(char));
++	imgbm = (IMAGEP)malloc(sizeof(IMAGE)+7*ww*hh*sizeof(int));
++	y = &imgbm->data[4*ww*hh];
++	u = &imgbm->data[5*ww*hh];
++	v = &imgbm->data[6*ww*hh];
++	imgbm->m_w = ww;
++	imgbm->m_h = hh;
++ 
++	imgbm->m_red   = imgbm->data;
++	imgbm->m_green = &imgbm->data[ww*hh];
++	imgbm->m_blue  = &imgbm->data[2*ww*hh];
++	imgbm->m_tmp  = &imgbm->data[3*ww*hh];
++	printf("Copying RGB 8 bit char to 32 int \n");
++	printf("splitting data to rgb\n");
++	
++ 
++	lclip = &data[0];
++	r = &dataptr[0];
++	g = &dataptr[ww*hh];
++	b = &dataptr[2*ww*hh];
++	for (loop=0; loop < size/3; loop++) {
++		*imgbm->m_red = lclip[0];
++		*r = lclip[0];
++		lclip++;
++		imgbm->m_red++;
++		r++;
++		*imgbm->m_green = lclip[0];
++		*g = lclip[0];
++		lclip++;
++		imgbm->m_green++;
++		g++;
++		*imgbm->m_blue = lclip[0];
++		*b = lclip[0];
++		lclip++;
++		imgbm->m_blue++;
++		b++;
++	}
++	/* resetting imgbm->m_red imgbm->m_green and imgbm->m_blue
++	to the starting addresses */
++	imgbm->m_red   = imgbm->data;
++	imgbm->m_green = &imgbm->data[ww*hh];
++	imgbm->m_blue  = &imgbm->data[2*ww*hh];
++	r = &dataptr[0];
++	g = &dataptr[65536];
++	b = &dataptr[131072];	
++ 
++ 	
++
++	
+ 	opj_cparameters_t l_param;
+ 	opj_codec_t * l_codec;
+ 	opj_image_t * l_image;
+@@ -96,47 +289,110 @@ int main (int argc, char *argv[])
+   int tile_height;
+   int comp_prec;
+   int irreversible;
+-  const char *output_file;
++  char *output_file;
++
++  
++ 
+ 
+-  /* should be test_tile_encoder 3 2000 2000 1000 1000 8 tte1.j2k */
+-  if( argc == 9 )
+-    {
+-    num_comps = (OPJ_UINT32)atoi( argv[1] );
+-    image_width = atoi( argv[2] );
+-    image_height = atoi( argv[3] );
+-    tile_width = atoi( argv[4] );
+-    tile_height = atoi( argv[5] );
+-    comp_prec = atoi( argv[6] );
+-    irreversible = atoi( argv[7] );
+-    output_file = argv[8];
+-    }
+-  else
+-    {
+     num_comps = 3;
+-    image_width = 2000;
+-    image_height = 2000;
+-    tile_width = 1000;
+-    tile_height = 1000;
++    image_width = width;
++    image_height = height;
++    tile_width = width;
++    tile_height = height;
+     comp_prec = 8;
+-    irreversible = 1;
++    irreversible = 0;
+     output_file = "test.j2k";
+-    }
++    
+   if( num_comps > NUM_COMPS_MAX )
+     {
+     return 1;
+     }
+ 	l_nb_tiles = (OPJ_UINT32)(image_width/tile_width) * (OPJ_UINT32)(image_height/tile_height);
+ 	l_data_size = (OPJ_UINT32)tile_width * (OPJ_UINT32)tile_height * (OPJ_UINT32)num_comps * (OPJ_UINT32)(comp_prec/8);
+-
++	printf("l_nb_tiles %d l_data_size %d \n", l_nb_tiles, l_data_size);
+ 	l_data = (OPJ_BYTE*) malloc(l_data_size * sizeof(OPJ_BYTE));
+ 	if(l_data == NULL){
+ 		return 1;
+ 	}
+-	fprintf(stdout, "Encoding random values -> keep in mind that this is very hard to compress\n");
+-	for (i=0;i<l_data_size;++i)	{
+-		l_data[i] = (OPJ_BYTE)i; /*rand();*/
++	//fprintf(stdout, "Encoding random values -> keep in mind that this is very hard to compress\n");
++	//1048576 2097152 3145728
++	//for (i=0;i<l_data_size;++i)	{
++ 	
++		if(plot == 1) {
++			
++			printf("write the files \n");
++			printf("red-out.32t, grn-out.32t, and blu-out.32t\n");
++			octave_output_file_1 = "red-out.32t";
++			//i = octave_write(octave_output_file_1, imgbm->m_red, sz);
++			
++			i = octave_write_byte(octave_output_file_1,r , sz);
++			if(i == 0) printf("could not write file\n");
++	
++			octave_output_file_2 = "grn-out.32t";
++			//i = octave_write(octave_output_file_2, imgbm->m_green, sz);
++			i = octave_write_byte(octave_output_file_2, g, sz);	
++			if(i == 0) printf("could not write file\n");
++	
++			octave_output_file_3 = "blu-out.32t";
++			//i = octave_write(octave_output_file_3, imgbm->m_blue, sz);
++			i = octave_write_byte(octave_output_file_3, b, sz);
++			if(i == 0) printf("could not write file\n");
++		}
++	
++	
++ 
++		printf("loading RGB data \n");
++ 
++/*		
++		for (i=0;i<size/3;i++)	{	
++			l_data[i] = (OPJ_BYTE)imgbm->m_red[0];
++			imgbm->m_red++;
++		}
++		imgptr = &l_data[0];
++		printf("0x%x %d \n",imgptr,i);
++		imgptr = &l_data[i];
++		printf("0x%x %d \n",imgptr,i);		
++		for (i=i;i<(size/3)*2;i++)	{	
++			l_data[i] = (OPJ_BYTE)imgbm->m_green[0];
++			imgbm->m_green++;
++		}
++		imgptr = &l_data[i];
++		printf("0x%x %d \n",imgptr,i);
++		for (i=i;i<size/3;i++)	{	
++			l_data[i] = (OPJ_BYTE)imgbm->m_blue[0];
++			imgbm->m_blue++;
++		}
++		*/
++
++		for (i=0;i<(size/3);i++)	{	
++			l_data[i] = (OPJ_BYTE)r[0];
++			r++;
++		}
++		imgptr = &l_data[i];
++		printf("0x%x %d \n",imgptr,i);
++ 		
++		for (i=i;i<(size/3)*2;i++)	{	
++			l_data[i] = (OPJ_BYTE)g[0];
++			g++;
++		}
++		imgptr = &l_data[i];
++		printf("0x%x %d \n",imgptr,i);
++		for (i=i;i<(size/3)*3;i++)	{	
++			l_data[i] = (OPJ_BYTE)b[0];
++			b++;
++		}
++		imgptr = &l_data[i];	
++		printf("0x%x %d \n",imgptr,i);
++
++/*	
++	for (i=0;i<size;i++)	{	
++			l_data[i] = (OPJ_BYTE)data[i];
++		
+ 	}
++*/
+ 
++	//opj_mct_encode(imgbm->m_red,imgbm->m_green,imgbm->m_blue,size/3);	
++ 
+ 	opj_set_default_encoder_parameters(&l_param);
+ 	/** you may here add custom encoding parameters */
+ 	/* rate specifications */
+@@ -187,7 +443,7 @@ int main (int argc, char *argv[])
+ 	/* l_param.mode = 0;*/
+ 
+ 	/** number of resolutions */
+-	l_param.numresolution = 6;
++	l_param.numresolution = 3;
+ 
+ 	/** progression order to use*/
+ 	/** OPJ_LRCP, OPJ_RLCP, OPJ_RPCL, PCRL, CPRL */
+@@ -203,7 +459,8 @@ int main (int argc, char *argv[])
+ 
+ 	/* if we are using mct */
+ #ifdef USING_MCT
+-	opj_set_MCT(&l_param,l_mct,l_offsets,NUM_COMPS);
++	//opj_set_MCT(&l_param,l_mct,l_offsets,NUM_COMPS);
++	opj_set_MCT(&l_param,l_mct,l_offsets,num_comps);
+ #endif
+ 
+ 
+@@ -235,6 +492,8 @@ int main (int argc, char *argv[])
+     }
+   else
+     {
++		printf("In test_tile_encoder\n");
++		printf("creating J2k\n");
+     l_codec = opj_create_compress(OPJ_CODEC_J2K);
+     }
+ 	if (!l_codec) {
+@@ -309,7 +568,8 @@ int main (int argc, char *argv[])
+     opj_stream_destroy(l_stream);
+ 	opj_destroy_codec(l_codec);
+ 	opj_image_destroy(l_image);
+-
++	free(dataptr);
++	free(imgbm);
+ 	free(l_data);
+ 
+ 	/* Print profiling*/
