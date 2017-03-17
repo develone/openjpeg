@@ -399,7 +399,7 @@ int main (int argc, char *argv[])
 	/** number of quality layers in the stream */
 	l_param.tcp_numlayers = 1;
 	l_param.cp_fixed_quality = 1;
-	l_param.tcp_distoratio[0] = 20;
+	l_param.tcp_distoratio[0] = 80;
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
