@@ -228,20 +228,20 @@ int main (int argc, char *argv[])
 	b = &dataptr[2*ww*hh];
 	for (loop=0; loop < size/3; loop++) {
 		*imgbm->m_red = lclip[0];
-		*r = lclip[0];
+		*b = lclip[0];
 		lclip++;
 		imgbm->m_red++;
-		r++;
+		b++;
 		*imgbm->m_green = lclip[0];
 		*g = lclip[0];
 		lclip++;
 		imgbm->m_green++;
 		g++;
 		*imgbm->m_blue = lclip[0];
-		*b = lclip[0];
+		*r = lclip[0];
 		lclip++;
 		imgbm->m_blue++;
-		b++;
+		r++;
 	}
 	/* resetting imgbm->m_red imgbm->m_green and imgbm->m_blue
 	to the starting addresses */
@@ -249,8 +249,8 @@ int main (int argc, char *argv[])
 	imgbm->m_green = &imgbm->data[ww*hh];
 	imgbm->m_blue  = &imgbm->data[2*ww*hh];
 	r = &dataptr[0];
-	g = &dataptr[65536];
-	b = &dataptr[131072];	
+	g = &dataptr[ww*hh];
+	b = &dataptr[2*ww*hh];	
  
  	
 
@@ -399,11 +399,11 @@ int main (int argc, char *argv[])
 	/** number of quality layers in the stream */
 	l_param.tcp_numlayers = 1;
 	l_param.cp_fixed_quality = 1;
-	l_param.tcp_distoratio[0] = 80;
+	//l_param.tcp_distoratio[0] = 80;
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
-
+	
 
 	/* tile definitions parameters */
 	/* position of the tile grid aligned with the image */
