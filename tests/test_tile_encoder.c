@@ -35,6 +35,155 @@
 #include <sys/time.h>
 
 #include "dwtlift.h"
+/* Global */
+int height, width;
+typedef struct
+    {
+        unsigned char RGB[3];
+    }RGB;
+    
+    
+// ********** Create Matrix **********
+RGB** createMatrix(){
+    RGB** Matrix;
+    int i;
+    Matrix = (RGB **) malloc (sizeof (RGB*) * height);
+    if (Matrix == NULL){
+        perror("***** No memory available *****");
+        exit(0);
+    }
+    for (i=0;i<height;i++){
+        Matrix[i] = (RGB *) malloc (sizeof(RGB) * width);
+        if (Matrix[i] == NULL){
+        perror("***** No memory available *****");
+            exit(0);
+        }
+    }
+    return(Matrix);
+}
+
+RGB** loadImage(FILE *arq, RGB** Matrix){
+    int i,j;
+    RGB tmp;
+    long pos = 119;
+ 
+    fseek(arq,0,0);
+ 
+    for (i=0; i<height; i++){
+        for (j=0; j<width; j++){
+            pos+= 3;
+            fseek(arq,pos,0);
+            fread(&tmp,(sizeof(RGB)),1,arq);
+            Matrix[i][j] = tmp;
+        }
+    }
+    return(Matrix);
+}
+/*upside down data in bitmap*/
+void p_matrix(RGB** Matrix,char *r,char *g,char *b) {
+	int i,j;
+	RGB tmp;
+	for (i=height-1; i>-1; i--){
+		for (j=0; j<width; j++){
+			tmp = Matrix[i][j];
+			//printf("%d %d 0x%x 0x%x 0x%x \n ",i,j,tmp.RGB[1],tmp.RGB[0],tmp.RGB[2]);
+			r[0] = tmp.RGB[1];
+			r++;
+			g[0] = tmp.RGB[0];
+			g++;			
+			b[0] = tmp.RGB[2];
+			b++;			
+		}
+	}
+}
+
+/*top down data in bitmap*/
+void pp_matrix(RGB** Matrix,char *r,char *g,char *b) {
+	int i,j;
+	RGB tmp;
+	for (i=0; i<height; i++){
+		for (j=0; j<width; j++){
+			tmp = Matrix[i][j];
+			//printf("%d %d 0x%x 0x%x 0x%x \n ",i,j,tmp.RGB[1],tmp.RGB[0],tmp.RGB[2]);
+			r[0] = tmp.RGB[1];
+			r++;
+			g[0] = tmp.RGB[0];
+			g++;			
+			b[0] = tmp.RGB[2];
+			b++;			
+		}
+	}
+}
+ 
+typedef struct
+    {
+        unsigned int size;
+        int width,height;
+        unsigned short int planes;
+        unsigned short int bpp;
+        unsigned int compression;
+        unsigned int imagesize;
+        int xresolution,yresolution;
+        unsigned int colours;
+        unsigned int impcolours;
+    }INFOHEADER;
+ 
+// ********** Read BMP info from file **********
+INFOHEADER readInfo(FILE *arq){
+    INFOHEADER info;
+ 
+    // Image Width in pixels
+    fseek(arq,18,0);
+    fread(&info.width,1,4,arq);
+ 
+    // Image Height in pixels
+    fseek(arq,22,0);
+    fread(&info.height,1,4,arq);
+ 
+    // Color depth, BPP (bits per pixel)
+    fseek(arq,28,0);
+    fread(&info.bpp,1,2,arq);
+ 
+    // Compression type
+    // 0 = Normmally
+    // 1 = 8 bits per pixel
+    // 2 = 4 bits per pixel
+    fseek(arq,30,0);
+    fread(&info.compression,1,4,arq);
+ 
+    // Image size in bytes
+    fseek(arq,34,0);
+    fread(&info.imagesize,1,4,arq);
+ 
+    // Number of color used (NCL)
+    // vccalue = 0 for full color set
+    fseek(arq,46,0);
+    fread(&info.colours,1,4,arq);
+ 
+    // Number of important color (NIC)
+    // value = 0 means all collors important
+    fseek(arq,50,0);
+    fread(&info.impcolours,1,4,arq);
+ 
+    return(info);
+}
+// ********** Verify if the file is BMP *********
+void isBMP(FILE* arq, INFOHEADER info){
+    char type[3];
+    unsigned short int bpp;
+    fseek(arq,0,0);
+    fread(type,1,2,arq);
+    type[2] = '\0';
+ 
+    fseek(arq,28,0);
+    fread(&bpp,1,2,arq);
+	printf("testing if bitmap %c%c bpp = %d \n",type[0],type[1],bpp);
+    if (strcmp(type,"BM") || (bpp != 24)){
+        printf("\nThe file is not BMP format or is not 24 bits\n");
+            exit(0);
+    }
+}
+
 int octave_write(const char * fn,int * d_ptr, int sz) {
 	 
 	FILE *subfileptr;
@@ -116,34 +265,21 @@ int main (int argc, char *argv[])
 	int TopDown;
 	
 	/* need wha bit indicate TopDown*/
-	TopDown = 1;
- 	char *imgptr,*dataptr,*r,*g,*b;
+	TopDown = 0;
+ 	char *r,*g,*b;
+ 	/*
 	struct rec {
 		unsigned char header[14];	
 	};
 	struct rec1 {
 		unsigned char imginfo[40];	
 	};
+	*/
 	const char *octave_output_file_1;
 	const char *octave_output_file_2;
 	const char *octave_output_file_3;
 	FILE *in,*fp;
 	char *fn;
-
-	char inchar;
-	int bpp,j;
-	long int offset,width,height;
-	int pixels, size, sz;
-
-	int plot=1;
-	encode = 1;
-	decomp = 3;
-	flgyuv = 1;
-	printf("enc %d decomp %d yuv %d\n",encode,decomp,flgyuv);
-	struct rec record;
-	struct rec1 record1;
-
-
 	fn = argv[1];
 	in = fopen(fn,"rb");
 	
@@ -152,61 +288,70 @@ int main (int argc, char *argv[])
  		printf("Unle to open file!");
 		return 1;
 	}
+	//char inchar;
+	//int bpp;
+	//long int offset;
+	int pixels, size, sz;
 	
+	RGB** Matrix_aux;
+	RGB** Matrix;
+	INFOHEADER info;
+	info = readInfo(in);
+	height = info.height;
+	width = info.width;
+	isBMP(in,info);
+	r = malloc(sizeof(char)*height*width);
+	g = malloc(sizeof(char)*height*width);
+	b = malloc(sizeof(char)*height*width);
+	printf("allocating 0x%x 0x%x 0x%x \n",r,g,b);
+	Matrix_aux = createMatrix();
+	printf("size = %d \n",info.imagesize);
+	printf("planes = %d \n",info.planes);
+	printf("colours = %d \n",info.colours);
+
+	printf("height = %d width = %d \n",height,width);
+	printf("bpp = %d \n",info.bpp);
+	printf("xresolution = %d yresolution %d \n",info.xresolution,info.yresolution);
+	printf("rgb from Matrix to r g b ptrs\n");
+	Matrix = loadImage(in,Matrix_aux);
+	printf("splitting data to rgb\n");
+	if (TopDown == 0) {
+		/*upside down data in bitmap*/	
+		p_matrix(Matrix_aux,r,b,g);
+		r = &r[0];
+		g = &g[0];
+		b = &b[0];
+		printf("0x%x 0x%x 0x%x \n",r,g,b);
+	}
+	else 
+	{
+		/*top down data in bitmap*/
+		pp_matrix(Matrix_aux,r,b,g);
+	}
+
+	 
+	/*
+	octave_output_file_1 = "r.bin";
+	octave_output_file_2 = "g.bin";
+	octave_output_file_3 = "b.bin";
+    */
+	int plot=1;
+	encode = 1;
+	decomp = 3;
+	flgyuv = 1;
+	printf("enc %d decomp %d yuv %d\n",encode,decomp,flgyuv);
+ 	
 	/* read header */
-	 
-	fread(&record,sizeof(struct rec),1,in);
-	loop = 0;	
-	while(loop<14) {
-		printf("%i ",record.header[loop]);
-		loop++;
-	}
-	 
+	info = readInfo(in);
 	
-	printf("\n");
-	//xx1 = (long)record.header[4];
-	printf("file size = %li\n",(long)record.header[4]*65536+(long)record.header[3]*256+(long)record.header[2]);
-	offset = (long)record.header[11]*256+(long)record.header[10];
-	printf("offset to image = %i\n",offset);
-	
-	/* Image Information Header */
-	fread(&record1,sizeof(struct rec1),1,in);
-	loop = 0;
-	while(loop<40) {
-		printf("%i ",record1.imginfo[loop]);
-		loop++;
-	}
-		
-	width = (long)record1.imginfo[5]*256+(long)record1.imginfo[4];
-	height = (long)record1.imginfo[9]*256+(long)record1.imginfo[8];
-	printf("\n");
-	printf("width = %i height = %i\n",width,height);
-	bpp = record1.imginfo[14];
-	printf("\n");
-	printf("bits per pixel = %i\n",bpp);
-	pixels = width * height;
-	size = pixels*3;
-	printf("pixels = %d size = %d \n",pixels,size);
-	char data[size];
-	
-	
-	char *lclip;
-	
-	
-	for(loop=0; loop<(offset-54); loop++) {
-		fread(&inchar,sizeof(inchar),1,in);
-		 
-		//printf("%c ",inchar);
-	}
-	
-	fread(&data[0],sizeof(data),1,in);
+ 
  	gettimeofday(&start, NULL);
+ 	/*
 	IMAGEP		imgbm;
 	ww = width;
 	hh = height;
 	sz = ww*hh;
-	dataptr = malloc(3*ww*hh*sizeof(char));
-	printf("size of dataptr %d\n",3*ww*hh*sizeof(char));
+	
 	imgbm = (IMAGEP)malloc(sizeof(IMAGE)+7*ww*hh*sizeof(int));
 	y = &imgbm->data[4*ww*hh];
 	u = &imgbm->data[5*ww*hh];
@@ -219,38 +364,18 @@ int main (int argc, char *argv[])
 	imgbm->m_blue  = &imgbm->data[2*ww*hh];
 	imgbm->m_tmp  = &imgbm->data[3*ww*hh];
 	printf("Copying RGB 8 bit char to 32 int \n");
-	printf("splitting data to rgb\n");
+	*/
+
 	
  
-	lclip = &data[0];
-	r = &dataptr[0];
-	g = &dataptr[ww*hh];
-	b = &dataptr[2*ww*hh];
-	for (loop=0; loop < size/3; loop++) {
-		*imgbm->m_red = lclip[0];
-		*b = lclip[0];
-		lclip++;
-		imgbm->m_red++;
-		b++;
-		*imgbm->m_green = lclip[0];
-		*g = lclip[0];
-		lclip++;
-		imgbm->m_green++;
-		g++;
-		*imgbm->m_blue = lclip[0];
-		*r = lclip[0];
-		lclip++;
-		imgbm->m_blue++;
-		r++;
-	}
 	/* resetting imgbm->m_red imgbm->m_green and imgbm->m_blue
 	to the starting addresses */
+	/*
 	imgbm->m_red   = imgbm->data;
 	imgbm->m_green = &imgbm->data[ww*hh];
 	imgbm->m_blue  = &imgbm->data[2*ww*hh];
-	r = &dataptr[0];
-	g = &dataptr[ww*hh];
-	b = &dataptr[2*ww*hh];	
+	*/
+ 	
  
  	
 
@@ -314,82 +439,58 @@ int main (int argc, char *argv[])
 	if(l_data == NULL){
 		return 1;
 	}
-	//fprintf(stdout, "Encoding random values -> keep in mind that this is very hard to compress\n");
-	//1048576 2097152 3145728
-	//for (i=0;i<l_data_size;++i)	{
+ 
  	
 		if(plot == 1) {
 			
 			printf("write the files \n");
 			printf("red-out.32t, grn-out.32t, and blu-out.32t\n");
 			octave_output_file_1 = "red-out.32t";
-			//i = octave_write(octave_output_file_1, imgbm->m_red, sz);
+			 
 			
-			i = octave_write_byte(octave_output_file_1,r , sz);
+			i = octave_write_byte(octave_output_file_1,r , width*height);
 			if(i == 0) printf("could not write file\n");
 	
 			octave_output_file_2 = "grn-out.32t";
 			//i = octave_write(octave_output_file_2, imgbm->m_green, sz);
-			i = octave_write_byte(octave_output_file_2, g, sz);	
+			i = octave_write_byte(octave_output_file_2, g, width*height);	
 			if(i == 0) printf("could not write file\n");
 	
 			octave_output_file_3 = "blu-out.32t";
-			//i = octave_write(octave_output_file_3, imgbm->m_blue, sz);
-			i = octave_write_byte(octave_output_file_3, b, sz);
+			 
+			i = octave_write_byte(octave_output_file_3, b, width*height);
 			if(i == 0) printf("could not write file\n");
 		}
 	
 	
  
 		printf("loading RGB data \n");
+		printf("TRANSFER 0x%x 0x%x 0x%x \n",r,g,b);
  
-/*		
-		for (i=0;i<size/3;i++)	{	
-			l_data[i] = (OPJ_BYTE)imgbm->m_red[0];
-			imgbm->m_red++;
-		}
-		imgptr = &l_data[0];
-		printf("0x%x %d \n",imgptr,i);
-		imgptr = &l_data[i];
-		printf("0x%x %d \n",imgptr,i);		
-		for (i=i;i<(size/3)*2;i++)	{	
-			l_data[i] = (OPJ_BYTE)imgbm->m_green[0];
-			imgbm->m_green++;
-		}
-		imgptr = &l_data[i];
-		printf("0x%x %d \n",imgptr,i);
-		for (i=i;i<size/3;i++)	{	
-			l_data[i] = (OPJ_BYTE)imgbm->m_blue[0];
-			imgbm->m_blue++;
-		}
-		*/
 
-		for (i=0;i<(size/3);i++)	{	
-			l_data[i] = (OPJ_BYTE)r[0];
-			r++;
+		for (i=0;i<((info.imagesize)/3);i++)	{	
+			l_data[i] = (OPJ_BYTE)g[i];
+			
 		}
-		imgptr = &l_data[i];
-		printf("0x%x %d \n",imgptr,i);
+	
+		printf("%d \n",i);
  		
-		for (i=i;i<(size/3)*2;i++)	{	
-			l_data[i] = (OPJ_BYTE)g[0];
-			g++;
+		for (i=0;i<((info.imagesize/3));i++)	{	
+			l_data[i+(info.imagesize/3)] = (OPJ_BYTE)r[i];
+			
 		}
-		imgptr = &l_data[i];
-		printf("0x%x %d \n",imgptr,i);
-		for (i=i;i<(size/3)*3;i++)	{	
-			l_data[i] = (OPJ_BYTE)b[0];
-			b++;
+	 
+		printf("%d \n",i);
+		for (i=0;i<((info.imagesize/3));i++)	{	
+			l_data[i+(info.imagesize/3)*2] = (OPJ_BYTE)b[i];
+			
 		}
-		imgptr = &l_data[i];	
-		printf("0x%x %d \n",imgptr,i);
+		printf("%d \n",i);
+		printf("before reset 0x%x 0x%x 0x%x \n",r,g,b); 
 
-/*	
-	for (i=0;i<size;i++)	{	
-			l_data[i] = (OPJ_BYTE)data[i];
-		
-	}
-*/
+ 
+
+ 
 
 	//opj_mct_encode(imgbm->m_red,imgbm->m_green,imgbm->m_blue,size/3);	
 
@@ -399,7 +500,7 @@ int main (int argc, char *argv[])
 	/** number of quality layers in the stream */
 	l_param.tcp_numlayers = 1;
 	l_param.cp_fixed_quality = 1;
-	//l_param.tcp_distoratio[0] = 80;
+	//l_param.tcp_distoratio[0] = 20;
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
@@ -443,7 +544,7 @@ int main (int argc, char *argv[])
 	/* l_param.mode = 0;*/
 
 	/** number of resolutions */
-	l_param.numresolution = 3;
+	l_param.numresolution = 6;
 
 	/** progression order to use*/
 	/** OPJ_LRCP, OPJ_RLCP, OPJ_RPCL, PCRL, CPRL */
@@ -567,13 +668,18 @@ int main (int argc, char *argv[])
     opj_stream_destroy(l_stream);
 	opj_destroy_codec(l_codec);
 	opj_image_destroy(l_image);
-	free(dataptr);
-	free(imgbm);
+	//free(dataptr);
+	printf("FREE 0x%x 0x%x 0x%x \n",r,g,b);
+	free(r);
+	free(g);
+	free(b);
+	free(Matrix);
+	//free(imgbm);
 	free(l_data);
 
 	/* Print profiling*/
 	/*PROFPRINT();*/
-
+	
 	return 0;
 }
 
