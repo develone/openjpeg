@@ -6,7 +6,7 @@ rm -f libopenjp2.a
 
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c bio.c -o bio.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c cidx_manager.c -o cidx_manager.o
-arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c cio.c -o cio.c
+arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c cio.c -o cio.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c dwt.c -o dwt.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c event.c -o event.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c function_list.c -o function_list.o
