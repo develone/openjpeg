@@ -278,16 +278,32 @@ int main (int argc, char *argv[])
 	const char *octave_output_file_1;
 	const char *octave_output_file_2;
 	const char *octave_output_file_3;
+	
+	 
 	FILE *in,*fp;
-	char *fn;
-	fn = argv[1];
-	in = fopen(fn,"rb");
-	
-	
-	if (!in) {
- 		printf("Unle to open file!");
-		return 1;
+	char *fn,fnstr[20];
+	if(argc == 1) {
+		strcpy(fnstr,"../../lena_rgb_2048.bmp");
+		in = fopen(fnstr,"rb");
+		printf("Using default image %s %d\n",fnstr,argc);
+		if (!in) {
+			printf("Unle to open file!");
+			return 1;
+		}
 	}
+	else
+	{
+		fn = argv[1];
+		printf("Passed file %s %d \n",fn,argc);
+		in = fopen(fn,"rb");
+		if (!in) {
+			printf("Unle to open file!");
+			return 1;
+		}
+	}
+	
+	
+	
 	//char inchar;
 	//int bpp;
 	//long int offset;
