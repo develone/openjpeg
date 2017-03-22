@@ -31,6 +31,7 @@ arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c thix_manager.c -o thix_manager.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c thread.c -o thread.o
 arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c tpix_manager.c -o tpix_manager.o
+arm-none-eabi-gcc  -O2 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=hard -c openjpeg.c -o openjpeg.o
  
 arm-none-eabi-ar rcs libopenjp2.a *.o
 arm-none-eabi-ar t libopenjp2.a > libopenjp2_obj.txt
