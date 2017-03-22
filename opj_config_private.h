@@ -26,7 +26,7 @@
 /* check if function `memalign` exists */
 #define OPJ_HAVE_MEMALIGN
 /* check if function `posix_memalign` exists */
-#define OPJ_HAVE_POSIX_MEMALIGN
+/*#define OPJ_HAVE_POSIX_MEMALIGN bare-metal for ultibo*/
 
 #if !defined(_POSIX_C_SOURCE)
 #if defined(OPJ_HAVE_FSEEKO) || defined(OPJ_HAVE_POSIX_MEMALIGN)
