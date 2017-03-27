@@ -262,7 +262,7 @@ static void info_callback(const char *msg, void *client_data) {
 #define NUM_COMPS_MAX 4
 int main (int argc, char *argv[])
 {
-	int TopDown;
+	int TopDown,TCP_DISTORATIO,FILTER;
 	
 	/* need wha bit indicate TopDown*/
 	TopDown = 0;
@@ -292,7 +292,7 @@ int main (int argc, char *argv[])
 		}
 	}
 	else
-	{
+	{ 
 		fn = argv[1];
 		printf("Passed file %s %d \n",fn,argc);
 		in = fopen(fn,"rb");
@@ -315,6 +315,8 @@ int main (int argc, char *argv[])
 	info = readInfo(in);
 	height = info.height;
 	width = info.width;
+	TCP_DISTORATIO= 44;
+	FILTER = 0;
 	isBMP(in,info);
 	r = malloc(sizeof(char)*height*width);
 	g = malloc(sizeof(char)*height*width);
@@ -351,11 +353,11 @@ int main (int argc, char *argv[])
 	octave_output_file_2 = "g.bin";
 	octave_output_file_3 = "b.bin";
     */
-	int plot=1;
+	int plot=0;
 	encode = 1;
 	decomp = 3;
-	flgyuv = 1;
-	printf("enc %d decomp %d yuv %d\n",encode,decomp,flgyuv);
+	
+	printf("enc %d decomp %d distor %d filter %d\n",encode,decomp,TCP_DISTORATIO,FILTER);
  	
 	/* read header */
 	info = readInfo(in);
@@ -368,17 +370,17 @@ int main (int argc, char *argv[])
 	hh = height;
 	sz = ww*hh;
 	
-	imgbm = (IMAGEP)malloc(sizeof(IMAGE)+7*ww*hh*sizeof(int));
-	y = &imgbm->data[4*ww*hh];
-	u = &imgbm->data[5*ww*hh];
-	v = &imgbm->data[6*ww*hh];
-	imgbm->m_w = ww;
-	imgbm->m_h = hh;
+	imgbm = (IMAGEP)malloc(sizeof(IMAGE)+7*ww*height*sizeof(int));
+	y = &imgbm->data[4*width*height];
+	u = &imgbm->data[5*width*height];
+	v = &imgbm->data[6*width*height];
+	imgbm->m_w = width;
+	imgbm->m_h = height;
  
 	imgbm->m_red   = imgbm->data;
-	imgbm->m_green = &imgbm->data[ww*hh];
-	imgbm->m_blue  = &imgbm->data[2*ww*hh];
-	imgbm->m_tmp  = &imgbm->data[3*ww*hh];
+	imgbm->m_green = &imgbm->data[width*height];
+	imgbm->m_blue  = &imgbm->data[2*width*height];
+	imgbm->m_tmp  = &imgbm->data[3*width*height];
 	printf("Copying RGB 8 bit char to 32 int \n");
 	*/
 
@@ -388,8 +390,8 @@ int main (int argc, char *argv[])
 	to the starting addresses */
 	/*
 	imgbm->m_red   = imgbm->data;
-	imgbm->m_green = &imgbm->data[ww*hh];
-	imgbm->m_blue  = &imgbm->data[2*ww*hh];
+	imgbm->m_green = &imgbm->data[width*height];
+	imgbm->m_blue  = &imgbm->data[2*width*height];
 	*/
  	
  
@@ -441,7 +443,7 @@ int main (int argc, char *argv[])
     tile_width = width;
     tile_height = height;
     comp_prec = 8;
-    irreversible = 0;
+    irreversible = FILTER;
     output_file = "test.j2k";
     
   if( num_comps > NUM_COMPS_MAX )
@@ -516,11 +518,11 @@ int main (int argc, char *argv[])
 	/** number of quality layers in the stream */
 	l_param.tcp_numlayers = 1;
 	l_param.cp_fixed_quality = 1;
-	//l_param.tcp_distoratio[0] = 20;
+	l_param.tcp_distoratio[0] = TCP_DISTORATIO;
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
-	
+	 
 
 	/* tile definitions parameters */
 	/* position of the tile grid aligned with the image */
