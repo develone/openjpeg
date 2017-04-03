@@ -35,8 +35,8 @@ arm-none-eabi-gcc  -O3 -mabi=aapcs -marm -march=armv7-a -mfpu=vfpv3-d16 -mfloat-
  
 arm-none-eabi-ar rcs libopenjp2.a *.o
 arm-none-eabi-ar t libopenjp2.a > libopenjp2_obj.txt
-echo "The word count here should be 20"
-echo "the word count in jpeg-2000-test/bare=metal/dwt"
-echo "when ./compile.sh is executed should be 21"
-echo "Word cpunt libopenjp2_obj.txt in src/lib/openjp2"
+echo "The word count here should be 22"
+echo "the word count in /home/pi/jpeg-2000-test/bare-metal/openjp"
+echo "when ./compile.sh is executed should be 23"
+echo "Word count libopenjp2_obj.txt in /home/pi/t_ultibo/src/lib/openjp2"
 wc libopenjp2_obj.txt 
