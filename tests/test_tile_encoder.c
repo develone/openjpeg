@@ -267,14 +267,7 @@ int main (int argc, char *argv[])
 	/* need wha bit indicate TopDown*/
 	TopDown = 0;
  	char *r,*g,*b;
- 	/*
-	struct rec {
-		unsigned char header[14];	
-	};
-	struct rec1 {
-		unsigned char imginfo[40];	
-	};
-	*/
+ 
 	const char *octave_output_file_1;
 	const char *octave_output_file_2;
 	const char *octave_output_file_3;
@@ -364,35 +357,11 @@ int main (int argc, char *argv[])
 	
  
  	gettimeofday(&start, NULL);
- 	/*
-	IMAGEP		imgbm;
-	ww = width;
-	hh = height;
-	sz = ww*hh;
-	
-	imgbm = (IMAGEP)malloc(sizeof(IMAGE)+7*ww*height*sizeof(int));
-	y = &imgbm->data[4*width*height];
-	u = &imgbm->data[5*width*height];
-	v = &imgbm->data[6*width*height];
-	imgbm->m_w = width;
-	imgbm->m_h = height;
  
-	imgbm->m_red   = imgbm->data;
-	imgbm->m_green = &imgbm->data[width*height];
-	imgbm->m_blue  = &imgbm->data[2*width*height];
-	imgbm->m_tmp  = &imgbm->data[3*width*height];
-	printf("Copying RGB 8 bit char to 32 int \n");
-	*/
 
 	
  
-	/* resetting imgbm->m_red imgbm->m_green and imgbm->m_blue
-	to the starting addresses */
-	/*
-	imgbm->m_red   = imgbm->data;
-	imgbm->m_green = &imgbm->data[width*height];
-	imgbm->m_blue  = &imgbm->data[2*width*height];
-	*/
+ 
  	
  
  	
@@ -491,19 +460,19 @@ int main (int argc, char *argv[])
 			
 		}
 	
-		printf("%d \n",i);
+		 
  		
 		for (i=0;i<((info.imagesize/3));i++)	{	
 			l_data[i+(info.imagesize/3)] = (OPJ_BYTE)r[i];
 			
 		}
 	 
-		printf("%d \n",i);
+		 
 		for (i=0;i<((info.imagesize/3));i++)	{	
 			l_data[i+(info.imagesize/3)*2] = (OPJ_BYTE)b[i];
 			
 		}
-		printf("%d \n",i);
+		 
 		printf("before reset 0x%x 0x%x 0x%x \n",r,g,b); 
 
  
@@ -692,7 +661,7 @@ int main (int argc, char *argv[])
 	free(g);
 	free(b);
 	free(Matrix);
-	//free(imgbm);
+	 
 	free(l_data);
 
 	/* Print profiling*/
