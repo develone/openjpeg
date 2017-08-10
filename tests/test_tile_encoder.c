@@ -486,13 +486,13 @@ int main (int argc, char *argv[])
 	/* rate specifications */
 	/** number of quality layers in the stream */
 	l_param.tcp_numlayers = 1;
-	l_param.cp_fixed_quality = 1;
-	l_param.tcp_distoratio[0] = TCP_DISTORATIO;
+	//l_param.cp_fixed_quality = 1;
+	//l_param.tcp_distoratio[0] = TCP_DISTORATIO;
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
-	 
-
+	l_param.cp_disto_alloc = 1; 
+	l_param.tcp_rates[0] = 100;
 	/* tile definitions parameters */
 	/* position of the tile grid aligned with the image */
 	l_param.cp_tx0 = 0;
