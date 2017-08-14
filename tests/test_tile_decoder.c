@@ -162,6 +162,10 @@ static void info_callback(const char *msg, void *client_data) {
 
 int main (int argc, char *argv[])
 {
+		char *r_decompress,*g_decompress,*b_decompress;
+		const char *r_decompress_fn="red";
+		const char *g_decompress_fn="green";
+		const char *b_decompress_fn="blue";	
         opj_dparameters_t l_param;
         opj_codec_t * l_codec;
         opj_image_t * l_image;
@@ -332,7 +336,12 @@ int main (int argc, char *argv[])
                         /** now should inspect image to know the reduction factor and then how to behave with data */
                 }
         }
-
+		r_decompress = 	l_data;
+		octave_write_byte(r_decompress_fn,r_decompress,da_x1*da_y1);
+		g_decompress = 	l_data+da_x1*da_y1;
+		octave_write_byte(g_decompress_fn,g_decompress,da_x1*da_y1);
+		b_decompress = 	l_data+da_x1*da_y1+da_x1*da_y1;
+		octave_write_byte(b_decompress_fn,b_decompress,da_x1*da_y1);
         if (! opj_end_decompress(l_codec,l_stream))
         {
                 free(l_data);
@@ -353,4 +362,57 @@ int main (int argc, char *argv[])
 
         return EXIT_SUCCESS;
 }
+int octave_write(const char * fn,int * d_ptr, int sz) {
+	 
+	FILE *subfileptr;
+	subfileptr = fopen(fn,"w");
+	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
+	if (NULL == subfileptr) {
+		/*
+		fprintf(stderr, "Could not open red for writing\n");
+		perror("RED-WR:");
+		exit(EXIT_FAILURE);
+		*/
+		return(0);
+	}
+ 
+	if (sz != (int)fwrite(d_ptr,  sizeof(int), sz, subfileptr)) {
+		fprintf(stderr, "Write of red failed\n"); perror("RED:");
+		exit(EXIT_FAILURE);
+	}
+	
+ 	
+	fclose(subfileptr);
+	
+	return(1);
+}
 
+//pass ip to a routine 
+//which malloc 3 area
+//read 65536  values of red 262144 32 bit int  0xc0000424 to 0xc0040423
+//read 65536  values of green 262144 32 bit int 0xc0040424 to 0xc00c0423
+//read 65536  values of blue 262144 32 bit int
+int octave_write_byte(const char * fn,char * d_ptr, int sz) {
+	 
+	FILE *subfileptr;
+	subfileptr = fopen(fn,"w");
+	printf("file name %s data ptr 0x%x size %d \n",fn, d_ptr,sz);
+	if (NULL == subfileptr) {
+		/*
+		fprintf(stderr, "Could not open red for writing\n");
+		perror("RED-WR:");
+		exit(EXIT_FAILURE);
+		*/
+		return(0);
+	}
+ 
+	if (sz != (int)fwrite(d_ptr,  sizeof(char), sz, subfileptr)) {
+		fprintf(stderr, "Write of red failed\n"); perror("RED:");
+		exit(EXIT_FAILURE);
+	}
+	
+ 	
+	fclose(subfileptr);
+	
+	return(1);
+}
