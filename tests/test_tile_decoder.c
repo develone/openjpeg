@@ -165,7 +165,11 @@ int main (int argc, char *argv[])
 		char *r_decompress,*g_decompress,*b_decompress;
 		const char *r_decompress_fn="red";
 		const char *g_decompress_fn="green";
-		const char *b_decompress_fn="blue";	
+		const char *b_decompress_fn="blue";
+		unsigned int *rgb;
+		const char *rgb_decompress_fn="rgb";
+		
+		int loop;
         opj_dparameters_t l_param;
         opj_codec_t * l_codec;
         opj_image_t * l_image;
@@ -183,7 +187,7 @@ int main (int argc, char *argv[])
         int da_x1=1000;
         int da_y1=1000;
         const char *input_file;
-
+		
         /* should be test_tile_decoder 0 0 1000 1000 tte1.j2k */
         if( argc == 6 )
         {
@@ -202,7 +206,7 @@ int main (int argc, char *argv[])
                 da_y1=1000;
                 input_file = "test.j2k";
         }
-
+		rgb = (int)malloc(da_x1*da_y1*sizeof(int));
         if (! l_data) {
                 return EXIT_FAILURE;
         }
@@ -336,12 +340,18 @@ int main (int argc, char *argv[])
                         /** now should inspect image to know the reduction factor and then how to behave with data */
                 }
         }
-		r_decompress = 	l_data;
+		r_decompress = 	l_data+da_x1*da_y1;
 		octave_write_byte(r_decompress_fn,r_decompress,da_x1*da_y1);
-		g_decompress = 	l_data+da_x1*da_y1;
+		g_decompress = 	l_data;
 		octave_write_byte(g_decompress_fn,g_decompress,da_x1*da_y1);
 		b_decompress = 	l_data+da_x1*da_y1+da_x1*da_y1;
 		octave_write_byte(b_decompress_fn,b_decompress,da_x1*da_y1);
+		for(loop=0;loop<da_x1*da_y1;loop++) {
+			rgb[loop] = b_decompress[loop]*65536+r_decompress[loop]*256+g_decompress[loop];
+			//printf("%d 0x%x 0x%x 0x%x 0x%x\n",loop,rgb[loop],r_decompress[loop],g_decompress[loop],b_decompress[loop]);
+		}
+		octave_write(rgb_decompress_fn,rgb,da_x1*da_y1);
+		free(rgb);
         if (! opj_end_decompress(l_codec,l_stream))
         {
                 free(l_data);
