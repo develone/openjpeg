@@ -139,7 +139,9 @@ INFOHEADER readInfo(FILE *arq){
     // Image Height in pixels
     fseek(arq,22,0);
     fread(&info.height,1,4,arq);
- 
+
+    fseek(arq,26,0);
+    fread(&info.planes,1,2,arq); 
     // Color depth, BPP (bits per pixel)
     fseek(arq,28,0);
     fread(&info.bpp,1,2,arq);
@@ -154,7 +156,11 @@ INFOHEADER readInfo(FILE *arq){
     // Image size in bytes
     fseek(arq,34,0);
     fread(&info.imagesize,1,4,arq);
- 
+    
+    fseek(arq,38,0);
+    fread(&info.xresolution,1,4,arq); 
+    fseek(arq,42,0);
+    fread(&info.yresolution,1,4,arq);    
     // Number of color used (NCL)
     // vccalue = 0 for full color set
     fseek(arq,46,0);
@@ -162,10 +168,102 @@ INFOHEADER readInfo(FILE *arq){
  
     // Number of important color (NIC)
     // value = 0 means all collors important
-    fseek(arq,50,0);
+    fseek(arq,54,0);
     fread(&info.impcolours,1,4,arq);
  
     return(info);
+}
+void writeImage(FILE *arqw, RGB** Matrix){
+    int i,j;
+    RGB tmp;
+    long pos = 119;
+	//printf("height %d width %d \n", height,width);
+	//tmp = Matrix[0][0];
+	//printf("0x%x 0x%x 0x%x \n",tmp.RGB[0],tmp.RGB[1],tmp.RGB[2]);
+    //fseek(arqw,0,0);
+ 
+    for (i=0; i<height; i++){
+        for (j=0; j<width; j++){
+            pos+= 3;
+            fseek(arqw,pos,0);
+            //printf("%ld ",pos);
+            //printf("%d %d \n",i,j);
+            tmp = Matrix[i][j];
+            //printf("0x%x 0x%x 0x%x \n",tmp.RGB[0],tmp.RGB[1],tmp.RGB[2]);
+            fwrite(&tmp,(sizeof(RGB)),1,arqw);
+            //Matrix[i][j] = tmp;
+        }
+    }
+    //return(Matrix);
+    fclose(arqw);
+}
+// ********** Write BMP info from file **********
+void writeInfo(FILE *arqw,INFOHEADER infowrite){
+    //INFOHEADER info;
+    char type[3];
+    int hdr;
+    char offset=122,unknow=108;
+    
+    hdr = infowrite.height*infowrite.width*3+offset;
+    type[0] = 0x42;
+    type[1] = 0x4D;
+
+    
+    fseek(arqw,2,0);
+    fwrite(&hdr,1,4,arqw);
+
+    fseek(arqw,10,0);
+    fwrite(&offset,1,1,arqw);
+
+    fseek(arqw,14,0);
+    fwrite(&unknow,1,1,arqw);
+    	
+	fseek(arqw,0,0);
+    fwrite(type,1,2,arqw);
+    
+    // Image Width in pixels
+    fseek(arqw,18,0);
+    fwrite(&infowrite.width,1,4,arqw);
+ 
+    // Image Height in pixels
+    fseek(arqw,22,0);
+    fwrite(&infowrite.height,1,4,arqw);
+    
+    fseek(arqw,26,0);
+    fwrite(&infowrite.planes,1,2,arqw); 
+    
+    // Color depth, BPP (bits per pixel)
+    fseek(arqw,28,0);
+    fwrite(&infowrite.bpp,1,2,arqw);
+ 
+    // Compression type
+    // 0 = Normmally
+    // 1 = 8 bits per pixel
+    // 2 = 4 bits per pixel
+    fseek(arqw,30,0);
+    fwrite(&infowrite.compression,1,4,arqw);
+ 
+    // Image size in bytes
+    fseek(arqw,34,0);
+    fwrite(&infowrite.imagesize,1,4,arqw);
+
+    fseek(arqw,38,0);
+    fwrite(&infowrite.xresolution,1,4,arqw); 
+    fseek(arqw,42,0);
+    fwrite(&infowrite.yresolution,1,4,arqw);
+ 
+    // Number of color used (NCL)
+    // vccalue = 0 for full color set
+    fseek(arqw,46,0);
+    fwrite(&infowrite.colours,1,4,arqw);
+ 
+    // Number of important color (NIC)
+    // value = 0 means all collors important
+    fseek(arqw,54,0);
+    fwrite(&infowrite.impcolours,1,4,arqw);
+ 
+    //return(info);
+    //fclose(arqw);
 }
 // ********** Verify if the file is BMP *********
 void isBMP(FILE* arq, INFOHEADER info){
@@ -280,7 +378,7 @@ int main (int argc, char *argv[])
 		in = fopen(fnstr,"rb");
 		printf("Using default image %s %d\n",fnstr,argc);
 		if (!in) {
-			printf("Unle to open file!");
+			printf("Unable to open file for reading!");
 			return 1;
 		}
 	}
@@ -295,8 +393,6 @@ int main (int argc, char *argv[])
 		}
 	}
 	
-	
-	
 	//char inchar;
 	//int bpp;
 	//long int offset;
@@ -305,6 +401,8 @@ int main (int argc, char *argv[])
 	RGB** Matrix_aux;
 	RGB** Matrix;
 	INFOHEADER info;
+	
+
 	info = readInfo(in);
 	height = info.height;
 	width = info.width;
@@ -319,12 +417,44 @@ int main (int argc, char *argv[])
 	printf("size = %d \n",info.imagesize);
 	printf("planes = %d \n",info.planes);
 	printf("colours = %d \n",info.colours);
-
+	printf("impcolours = 0x%x\n",info.impcolours);
 	printf("height = %d width = %d \n",height,width);
-	printf("bpp = %d \n",info.bpp);
-	printf("xresolution = %d yresolution %d \n",info.xresolution,info.yresolution);
+	printf("imagesc = 0x%x \n",info.imagesize);
 	printf("rgb from Matrix to r g b ptrs\n");
+	
 	Matrix = loadImage(in,Matrix_aux);
+	/*
+	RGB** Matrix_aux_wr;
+	Matrix_aux_wr = createMatrix();
+	Matrix_aux_wr = Matrix;
+
+	int bpp;
+	FILE *oo;
+	oo = fopen("test_wr.bmp","wb");
+	if (!oo) {
+			printf("Unable to open file for writing!");
+			return 1;
+	}
+	
+	INFOHEADER infowr;	
+	infowr.height = height;
+	infowr.width = width;
+	
+	infowr.imagesize = height*width*3;
+	bpp = 24;
+	infowr.bpp = bpp;
+	infowr.planes = 1;
+	infowr.compression = 0;
+	infowr.impcolours = 0x73524742;
+	
+	printf("WR imagesc = 0x%x \n",infowr.imagesize);
+	printf("Wr bpp = %d \n",infowr.bpp);
+	printf("Wr xresolution = %d yresolution %d \n",infowr.xresolution,infowr.yresolution);
+	printf("bpp = %d \n",infowr.bpp);
+	printf("xresolution = %d yresolution %d \n",infowr.xresolution,infowr.yresolution);
+	writeInfo(oo,infowr);
+	writeImage(oo,Matrix);
+	*/
 	printf("splitting data to rgb\n");
 	if (TopDown == 0) {
 		/*upside down data in bitmap*/	
