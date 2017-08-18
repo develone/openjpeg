@@ -319,24 +319,40 @@ INFOHEADER readInfo(FILE *arq){
 void writeImage(FILE *arqw, RGB** Matrix){
     int i,j;
     RGB tmp;
-    long pos = 119;
+    //long pos = 119;
+    long pos = 122;
 	//printf("height %d width %d \n", height,width);
 	//tmp = Matrix[0][0];
 	//printf("0x%x 0x%x 0x%x \n",tmp.RGB[0],tmp.RGB[1],tmp.RGB[2]);
     //fseek(arqw,0,0);
- 
+    char *wrbuf;
+    wrbuf = (char *)malloc(height*width*3);
+    printf("0x%x \n",wrbuf);
     for (i=0; i<height; i++){
         for (j=0; j<width; j++){
-            pos+= 3;
-            fseek(arqw,pos,0);
+            //pos+= 3;
+            //fseek(arqw,pos,0);
             //printf("%ld ",pos);
             //printf("%d %d \n",i,j);
             tmp = Matrix[i][j];
             //printf("0x%x 0x%x 0x%x \n",tmp.RGB[0],tmp.RGB[1],tmp.RGB[2]);
-            fwrite(&tmp,(sizeof(RGB)),1,arqw);
+            //fwrite(&tmp,(sizeof(RGB)),1,arqw);
             //Matrix[i][j] = tmp;
+            wrbuf[0] = (char)tmp.RGB[0];
+            wrbuf++;
+            wrbuf[0] = (char)tmp.RGB[1];
+            wrbuf++;
+            wrbuf[0] = (char)tmp.RGB[2];
+            wrbuf++;
+            
         }
     }
+    fseek(arqw,pos,0);
+    //printf("0x%x \n",wrbuf);
+    wrbuf= wrbuf - height*width*3;
+    //printf("0x%x \n",wrbuf);
+    fwrite(wrbuf,(height*width*3),1,arqw);
+    free(wrbuf);
     //return(Matrix);
     fclose(arqw);
 }
