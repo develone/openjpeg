@@ -666,7 +666,8 @@ int main (int argc, char *argv[])
 	printf("bpp = %d \n",infowr.bpp);
 	printf("xresolution = %d yresolution %d \n",infowr.xresolution,infowr.yresolution);
 	writeInfo(oo,infowr);
-	writeImage(oo,Matrix_aux_wr);	
+	writeImage(oo,Matrix_aux_wr);
+	free(Matrix_aux_wr);	
 		//free(rgb);
         if (! opj_end_decompress(l_codec,l_stream))
         {
