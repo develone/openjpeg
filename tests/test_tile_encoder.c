@@ -399,7 +399,7 @@ int main (int argc, char *argv[])
 	int pixels, size, sz;
 	
 	RGB** Matrix_aux;
-	RGB** Matrix;
+	//RGB** Matrix;
 	INFOHEADER info;
 	
 
@@ -422,7 +422,7 @@ int main (int argc, char *argv[])
 	printf("imagesc = 0x%x \n",info.imagesize);
 	printf("rgb from Matrix to r g b ptrs\n");
 	
-	Matrix = loadImage(in,Matrix_aux);
+	loadImage(in,Matrix_aux);
 	/*
 	RGB** Matrix_aux_wr;
 	Matrix_aux_wr = createMatrix();
@@ -790,7 +790,7 @@ int main (int argc, char *argv[])
 	free(r);
 	free(g);
 	free(b);
-	free(Matrix);
+	free(Matrix_aux);
 	 
 	free(l_data);
 
