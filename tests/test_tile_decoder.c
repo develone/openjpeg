@@ -338,11 +338,11 @@ void writeImage(FILE *arqw, RGB** Matrix){
             //printf("0x%x 0x%x 0x%x \n",tmp.RGB[0],tmp.RGB[1],tmp.RGB[2]);
             //fwrite(&tmp,(sizeof(RGB)),1,arqw);
             //Matrix[i][j] = tmp;
-            wrbuf[0] = (char)tmp.RGB[0];
+            wrbuf[0] = (char)tmp.RGB[2];
             wrbuf++;
             wrbuf[0] = (char)tmp.RGB[1];
             wrbuf++;
-            wrbuf[0] = (char)tmp.RGB[2];
+            wrbuf[0] = (char)tmp.RGB[0];
             wrbuf++;
             
         }
@@ -444,9 +444,9 @@ void isBMP(FILE* arq, INFOHEADER info){
 int main (int argc, char *argv[])
 {
 		char *r_decompress,*g_decompress,*b_decompress;
-		//const char *r_decompress_fn="red";
-		//const char *g_decompress_fn="green";
-		//const char *b_decompress_fn="blue";
+		const char *r_decompress_fn="red";
+		const char *g_decompress_fn="green";
+		const char *b_decompress_fn="blue";
 		//unsigned int *rgb;
 		//const char *rgb_decompress_fn="rgb";
 		
@@ -585,7 +585,7 @@ int main (int argc, char *argv[])
                                         &l_current_tile_y1,
                                         &l_nb_comps,
                                         &l_go_on))
-                {
+                {						
                         free(l_data);
                         opj_stream_destroy(l_stream);
                         opj_destroy_codec(l_codec);
@@ -621,12 +621,12 @@ int main (int argc, char *argv[])
                         /** now should inspect image to know the reduction factor and then how to behave with data */
                 }
         }
-		r_decompress = 	l_data;
-		//octave_write_byte(r_decompress_fn,r_decompress,da_x1*da_y1);
+		b_decompress = 	l_data;
+		octave_write_byte(b_decompress_fn,b_decompress,da_x1*da_y1);
 		g_decompress = 	l_data+da_x1*da_y1;
-		//octave_write_byte(g_decompress_fn,g_decompress,da_x1*da_y1);
-		b_decompress = 	l_data+da_x1*da_y1+da_x1*da_y1;
-		//octave_write_byte(b_decompress_fn,b_decompress,da_x1*da_y1);
+		octave_write_byte(g_decompress_fn,g_decompress,da_x1*da_y1);
+		r_decompress = 	l_data+da_x1*da_y1+da_x1*da_y1;
+		octave_write_byte(r_decompress_fn,r_decompress,da_x1*da_y1);
 		//for(loop=0;loop<da_x1*da_y1;loop++) {
 			//rgb[loop] = b_decompress[loop]*65536+r_decompress[loop]*256+g_decompress[loop];
 			//printf("%d 0x%x 0x%x 0x%x 0x%x\n",loop,rgb[loop],r_decompress[loop],g_decompress[loop],b_decompress[loop]);
@@ -677,7 +677,7 @@ int main (int argc, char *argv[])
                 opj_image_destroy(l_image);
                 return EXIT_FAILURE;
         }
-
+		printf("at end of loop\n");
         /* Free memory */
         free(l_data);
         opj_stream_destroy(l_stream);

@@ -87,12 +87,12 @@ void p_matrix(RGB** Matrix,char *r,char *g,char *b) {
 		for (j=0; j<width; j++){
 			tmp = Matrix[i][j];
 			//printf("%d %d 0x%x 0x%x 0x%x \n ",i,j,tmp.RGB[1],tmp.RGB[0],tmp.RGB[2]);
-			r[0] = tmp.RGB[1];
-			r++;
-			g[0] = tmp.RGB[0];
-			g++;			
-			b[0] = tmp.RGB[2];
+			g[0] = tmp.RGB[2];
+			g++;
+			b[0] = tmp.RGB[0];
 			b++;			
+			r[0] = tmp.RGB[1];
+			r++;			
 		}
 	}
 }
@@ -105,12 +105,12 @@ void pp_matrix(RGB** Matrix,char *r,char *g,char *b) {
 		for (j=0; j<width; j++){
 			tmp = Matrix[i][j];
 			//printf("%d %d 0x%x 0x%x 0x%x \n ",i,j,tmp.RGB[1],tmp.RGB[0],tmp.RGB[2]);
-			r[0] = tmp.RGB[1];
-			r++;
-			g[0] = tmp.RGB[0];
-			g++;			
-			b[0] = tmp.RGB[2];
+			g[0] = tmp.RGB[1];
+			g++;
+			b[0] = tmp.RGB[0];
 			b++;			
+			r[0] = tmp.RGB[2];
+			r++;			
 		}
 	}
 }
@@ -360,7 +360,7 @@ static void info_callback(const char *msg, void *client_data) {
 #define NUM_COMPS_MAX 4
 int main (int argc, char *argv[])
 {
-	int TopDown,TCP_DISTORATIO,FILTER;
+	int TopDown,TCP_DISTORATIO,FILTER,flg,CR;
 	
 	/* need wha bit indicate TopDown*/
 	TopDown = 0;
@@ -458,16 +458,20 @@ int main (int argc, char *argv[])
 	printf("splitting data to rgb\n");
 	if (TopDown == 0) {
 		/*upside down data in bitmap*/	
+		printf("in 0x%x 0x%x 0x%x \n",r,g,b);
 		p_matrix(Matrix_aux,r,b,g);
 		r = &r[0];
 		g = &g[0];
 		b = &b[0];
-		printf("0x%x 0x%x 0x%x \n",r,g,b);
+		printf("out 0x%x 0x%x 0x%x \n",r,g,b);
 	}
 	else 
 	{
 		/*top down data in bitmap*/
 		pp_matrix(Matrix_aux,r,b,g);
+		r = &r[0];
+		g = &g[0];
+		b = &b[0];
 	}
 
 	 
@@ -476,14 +480,15 @@ int main (int argc, char *argv[])
 	octave_output_file_2 = "g.bin";
 	octave_output_file_3 = "b.bin";
     */
-	int plot=0;
-	encode = 1;
+	int plot=1;
+	//encode = 1;
 	decomp = 3;
-	
-	printf("enc %d decomp %d distor %d filter %d\n",encode,decomp,TCP_DISTORATIO,FILTER);
+	flg = 0;
+	CR = 2;
+	printf("decomp %d distor %d filter %d flg %d CR %d\n",decomp,TCP_DISTORATIO,FILTER,flg,CR);
  	
 	/* read header */
-	info = readInfo(in);
+	//info = readInfo(in);
 	
  
  	gettimeofday(&start, NULL);
@@ -586,7 +591,7 @@ int main (int argc, char *argv[])
  
 
 		for (i=0;i<((info.imagesize)/3);i++)	{	
-			l_data[i] = (OPJ_BYTE)g[i];
+			l_data[i] = (OPJ_BYTE)b[i];
 			
 		}
 	
@@ -599,7 +604,7 @@ int main (int argc, char *argv[])
 	 
 		 
 		for (i=0;i<((info.imagesize/3));i++)	{	
-			l_data[i+(info.imagesize/3)*2] = (OPJ_BYTE)b[i];
+			l_data[i+(info.imagesize/3)*2] = (OPJ_BYTE)g[i];
 			
 		}
 		 
@@ -621,8 +626,14 @@ int main (int argc, char *argv[])
 	/* is using others way of calculation */
 	/* l_param.cp_disto_alloc = 1 or l_param.cp_fixed_alloc = 1 */
 	/* l_param.tcp_rates[0] = ... */
-	l_param.cp_disto_alloc = 1; 
-	l_param.tcp_rates[0] = 100;
+	if ( flg == 0 ) {
+		l_param.cp_disto_alloc = 1; 
+		l_param.tcp_rates[0] = CR;
+	}
+	else {	
+		l_param.cp_fixed_quality = 1;
+		l_param.tcp_distoratio[0] = TCP_DISTORATIO;
+	}
 	/* tile definitions parameters */
 	/* position of the tile grid aligned with the image */
 	l_param.cp_tx0 = 0;
@@ -661,7 +672,7 @@ int main (int argc, char *argv[])
 	/* l_param.mode = 0;*/
 
 	/** number of resolutions */
-	l_param.numresolution = 6;
+	l_param.numresolution = 4;
 
 	/** progression order to use*/
 	/** OPJ_LRCP, OPJ_RLCP, OPJ_RPCL, PCRL, CPRL */
